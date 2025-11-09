@@ -1,4 +1,3 @@
-// Paquete: com.chicharronesweb.pedidosapi.controller
 package com.chicharronesweb.pedidosapi.controller;
 
 import java.util.List;
@@ -6,15 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.chicharronesweb.pedidosapi.dto.PedidoRequestDTO;
 import com.chicharronesweb.pedidosapi.entity.Pedido;
@@ -28,14 +19,13 @@ public class PedidoController {
 
     @Autowired
     private PedidoService pedidoService;
-    
 
     @Autowired
     private PedidoRepository pedidoRepository;
 
     @PostMapping
     public ResponseEntity<Pedido> crearPedido(@RequestBody PedidoRequestDTO pedidoRequest) {
-        Integer usuarioIdSimulado = 1;
+        Integer usuarioIdSimulado = 1; // ⚠️ temporal
         Pedido nuevoPedido = pedidoService.crearPedido(pedidoRequest, usuarioIdSimulado);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPedido);
     }
@@ -68,8 +58,7 @@ public class PedidoController {
     }
 
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<Pedido>> obtenerPedidosPorUsuario(@PathVariable Integer usuarioId) {
-        List<Pedido> pedidos = pedidoService.obtenerPedidosPorUsuario(usuarioId);
-        return ResponseEntity.ok(pedidos);
+    public List<Pedido> obtenerPedidosPorUsuario(@PathVariable Integer usuarioId) {
+        return pedidoService.obtenerPedidosPorUsuario(usuarioId);
     }
 }
