@@ -5,6 +5,7 @@ import com.chicharronesweb.pedidosapi.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder; 
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -16,6 +17,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; 
 
     /**
      * Endpoint para registrar un nuevo usuario (cliente).
@@ -30,14 +34,15 @@ public class UsuarioController {
         }
         // 2. Establecer el rol por defecto como CLIENTE
         nuevoUsuario.setRol(Usuario.Rol.CLIENTE);
-        // ADVERTENCIA: En un proyecto real, aquí se debería codificar la contraseña antes de guardarla.
-        // Ejemplo: nuevoUsuario.setPassword(passwordEncoder.encode(nuevoUsuario.getPassword()));
+        // ✅ CORREGIDO - Codificar la contraseña antes de guardarla
+        nuevoUsuario.setPassword(passwordEncoder.encode(nuevoUsuario.getPassword()));
         // 3. Guardar el nuevo usuario en la base de datos
         Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
         // 4. Devolver una respuesta exitosa (sin la contraseña)
         usuarioGuardado.setPassword(null); // No devolver la contraseña
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioGuardado);
     }
+
     /**
      * Endpoint para manejar el inicio de sesión de los usuarios.
      * @param loginRequest Un objeto Usuario que contiene el email y la contraseña.
@@ -50,7 +55,7 @@ public class UsuarioController {
         if (usuarioOptional.isPresent()) {
             Usuario usuarioEncontrado = usuarioOptional.get();
             
-            if (usuarioEncontrado.getPassword().equals(loginRequest.getPassword())) {
+            if (passwordEncoder.matches(loginRequest.getPassword(), usuarioEncontrado.getPassword())) {
                 
                 Usuario respuestaUsuario = new Usuario();
                 respuestaUsuario.setId(usuarioEncontrado.getId());
