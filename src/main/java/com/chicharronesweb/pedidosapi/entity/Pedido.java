@@ -1,5 +1,6 @@
 package com.chicharronesweb.pedidosapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference; // <-- IMPORTAR
 import jakarta.persistence.*;
 import lombok.Data;
@@ -18,7 +19,12 @@ public class Pedido {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonBackReference
     private Usuario usuario;
+
+    @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private CalificacionPedido calificacion;
 
     private LocalDateTime fechaHora;
     private BigDecimal total;
@@ -27,7 +33,7 @@ public class Pedido {
     private EstadoPedido estado;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
-    @JsonManagedReference // <-- AÑADIR ESTA ANOTACIÓN
+    @JsonManagedReference
     private List<DetallePedido> detalles;
 
     public enum EstadoPedido {
