@@ -25,8 +25,8 @@ public class PedidoController {
 
     @PostMapping
     public ResponseEntity<Pedido> crearPedido(@RequestBody PedidoRequestDTO pedidoRequest) {
-        Integer usuarioIdSimulado = 1; // ⚠️ temporal
-        Pedido nuevoPedido = pedidoService.crearPedido(pedidoRequest, usuarioIdSimulado);
+        Integer usuarioId = pedidoRequest.getUsuarioId();
+        Pedido nuevoPedido = pedidoService.crearPedido(pedidoRequest, usuarioId);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPedido);
     }
 
