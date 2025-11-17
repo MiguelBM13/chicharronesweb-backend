@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.chicharronesweb.pedidosapi.dto.PedidoRequestDTO;
+import com.chicharronesweb.pedidosapi.dto.ProductoMasVendidoDTO;
 import com.chicharronesweb.pedidosapi.entity.Pedido;
 import com.chicharronesweb.pedidosapi.repository.PedidoRepository;
 import com.chicharronesweb.pedidosapi.service.PedidoService;
@@ -61,4 +62,12 @@ public class PedidoController {
     public List<Pedido> obtenerPedidosPorUsuario(@PathVariable Integer usuarioId) {
         return pedidoService.obtenerPedidosPorUsuario(usuarioId);
     }
+
+    @GetMapping("/reporte/mas-vendidos")
+    public ResponseEntity<List<ProductoMasVendidoDTO>> obtenerProductosMasVendidosPorMes(
+            @RequestParam("mes") int mes) {
+        List<ProductoMasVendidoDTO> reporte = pedidoRepository.obtenerProductosMasVendidosPorMes(mes);
+        return ResponseEntity.ok(reporte);
+    }
+
 }
