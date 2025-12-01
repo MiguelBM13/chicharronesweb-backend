@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.chicharronesweb.pedidosapi.dto.PedidoRequestDTO;
 import com.chicharronesweb.pedidosapi.entity.DetallePedido;
+import com.chicharronesweb.pedidosapi.entity.Notificacion;
 import com.chicharronesweb.pedidosapi.entity.Pedido;
 import com.chicharronesweb.pedidosapi.entity.Producto;
 import com.chicharronesweb.pedidosapi.entity.Usuario;
@@ -28,6 +29,8 @@ public class PedidoServiceImpl implements PedidoService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private ProductoRepository productoRepository;
+    @Autowired
+    private NotificacionService notificacionService;  // 🔔 AGREGADO
 
     @Override
     public List<Pedido> obtenerPedidosPorUsuario(Integer usuarioId) {
@@ -62,7 +65,7 @@ public class PedidoServiceImpl implements PedidoService {
             detalle.setCantidad(detalleDto.getCantidad());
             detalle.setPrecioUnitario(producto.getPrecio()); // Usamos el precio de la BD.
             detalle.setPedido(pedido); // Vinculamos el detalle con su cabecera.
-            
+
             detalles.add(detalle);
 
             // 4. Calcular el subtotal y sumarlo al total general.
@@ -75,6 +78,57 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setTotal(totalPedido);
 
         // 6. Guardar el pedido. Gracias a CascadeType.ALL, los detalles se guardan automáticamente.
-        return pedidoRepository.save(pedido);
+        Pedido pedidoGuardado = pedidoRepository.save(pedido);  // 🔔 MODIFICADO
+
+        // 🔔 7. NOTIFICAR AL CLIENTE
+        try {
+            Notificacion notifCliente = new Notificacion(
+                    usuarioId,
+                    "PEDIDO CREADO",
+                    "Tu pedido #" + pedidoGuardado.getId() + " fue registrado",
+                    pedidoGuardado.getId()
+            );
+            notificacionService.crearNotificacion(notifCliente);
+        } catch (Exception e) {
+            // Si falla la notificación, solo lo registramos pero no detenemos el pedido
+            System.err.println("Error al crear notificación para cliente: " + e.getMessage());
+        }
+
+        // 🔔 8. NOTIFICAR A LOS ADMINS
+        try {
+            List<Usuario> admins = usuarioRepository.findByRol(Usuario.Rol.ADMIN);
+            for (Usuario admin : admins) {
+                Notificacion notifAdmin = new Notificacion(
+                        admin.getId(),
+                        "NUEVO PEDIDO",
+                        "Nuevo pedido #" + pedidoGuardado.getId() + " recibido",
+                        pedidoGuardado.getId()
+                );
+                notificacionService.crearNotificacion(notifAdmin);
+            }
+        } catch (Exception e) {
+            // Si falla la notificación, solo lo registramos pero no detenemos el pedido
+            System.err.println("Error al crear notificaciones para admins: " + e.getMessage());
+        }
+
+        return pedidoGuardado;
+    }
+
+    @Override
+    public void notificarAdminsCambioEstado(Pedido pedido, String estadoAnterior, String nuevoEstado) {
+        try {
+            List<Usuario> admins = usuarioRepository.findByRol(Usuario.Rol.ADMIN);
+            for (Usuario admin : admins) {
+                Notificacion notif = new Notificacion(
+                        admin.getId(),
+                        "ESTADO PEDIDO",
+                        "Pedido #" + pedido.getId() + " esta  " + nuevoEstado,
+                        pedido.getId()
+                );
+                notificacionService.crearNotificacion(notif);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al notificar admins sobre cambio de estado: " + e.getMessage());
+        }
     }
 }

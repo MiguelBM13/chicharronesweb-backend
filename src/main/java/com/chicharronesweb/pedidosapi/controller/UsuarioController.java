@@ -1,14 +1,22 @@
 package com.chicharronesweb.pedidosapi.controller;
 
-import com.chicharronesweb.pedidosapi.entity.Usuario;
-import com.chicharronesweb.pedidosapi.repository.UsuarioRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
+import com.chicharronesweb.pedidosapi.entity.Usuario;
+import com.chicharronesweb.pedidosapi.repository.UsuarioRepository;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -30,8 +38,9 @@ public class UsuarioController {
 
     /**
      * Endpoint para registrar un nuevo usuario (cliente).
-     * 
-     * @param nuevoUsuario Datos del usuario a registrar (nombre, email, password).
+     *
+     * @param nuevoUsuario Datos del usuario a registrar (nombre, email,
+     * password).
      * @return El usuario creado o un error si el email ya existe.
      */
     @PostMapping("/registro")
@@ -55,10 +64,11 @@ public class UsuarioController {
 
     /**
      * Endpoint para manejar el inicio de sesión de los usuarios.
-     * 
-     * @param loginRequest Un objeto Usuario que contiene el email y la contraseña.
-     * @return Los datos del usuario (sin contraseña) si el login es exitoso, o un
-     *         error en caso contrario.
+     *
+     * @param loginRequest Un objeto Usuario que contiene el email y la
+     * contraseña.
+     * @return Los datos del usuario (sin contraseña) si el login es exitoso, o
+     * un error en caso contrario.
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Usuario loginRequest) {
@@ -117,4 +127,9 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/administradores")
+    public ResponseEntity<List<Usuario>> obtenerAdministradores() {
+        List<Usuario> admins = usuarioRepository.findByRol(Usuario.Rol.ADMIN);
+        return ResponseEntity.ok(admins);
+    }
 }

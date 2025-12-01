@@ -1,13 +1,15 @@
 package com.chicharronesweb.pedidosapi.service;
 
-import com.chicharronesweb.pedidosapi.entity.Categoria;
-import com.chicharronesweb.pedidosapi.repository.CategoriaRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import com.chicharronesweb.pedidosapi.entity.Categoria;
+import com.chicharronesweb.pedidosapi.repository.CategoriaRepository;
 
 @Service
 public class CategoriaServiceImpl implements CategoriaService {
@@ -36,6 +38,10 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional
     public void deleteById(Integer id) {
-        categoriaRepository.deleteById(id);
+        try {
+            categoriaRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("La categoría tiene productos asociados");
+        }
     }
 }

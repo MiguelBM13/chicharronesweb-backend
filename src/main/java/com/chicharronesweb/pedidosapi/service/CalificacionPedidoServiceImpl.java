@@ -1,15 +1,17 @@
 package com.chicharronesweb.pedidosapi.service;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.chicharronesweb.pedidosapi.dto.CalificacionPedidoDTO;
 import com.chicharronesweb.pedidosapi.entity.CalificacionPedido;
 import com.chicharronesweb.pedidosapi.entity.Pedido;
 import com.chicharronesweb.pedidosapi.repository.CalificacionPedidoRepository;
 import com.chicharronesweb.pedidosapi.repository.PedidoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class CalificacionPedidoServiceImpl implements CalificacionPedidoService {
@@ -21,29 +23,35 @@ public class CalificacionPedidoServiceImpl implements CalificacionPedidoService 
     private PedidoRepository pedidoRepository;
 
     @Override
+    @Transactional
     public CalificacionPedido registrarCalificacion(CalificacionPedidoDTO dto) {
-        // 1️⃣ Buscar el pedido
+
+        // ✅ Validar puntuación (por si acaso)
+        if (dto.getPuntuacion() == null || dto.getPuntuacion() < 1 || dto.getPuntuacion() > 5) {
+            throw new IllegalArgumentException("La puntuación debe estar entre 1 y 5");
+        }
+
+        // Buscar el pedido
         Pedido pedido = pedidoRepository.findById(dto.getPedidoId())
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
 
-        // 2️⃣ Validar que el pedido esté LISTO
-        if (pedido.getEstado() != Pedido.EstadoPedido.LISTO) {
-            throw new RuntimeException("Solo se pueden calificar pedidos con estado LISTO");
+        // Validar que el pedido esté ENTREGADO (no LISTO)
+        if (pedido.getEstado() != Pedido.EstadoPedido.ENTREGADO) {
+            throw new RuntimeException("Solo se pueden calificar pedidos ENTREGADOS");
         }
 
-        // 3️⃣ Verificar si ya existe una calificación para este pedido
+        // Verificar si ya existe una calificación
         Optional<CalificacionPedido> existente = calificacionRepository.findByPedidoId(dto.getPedidoId());
-
         CalificacionPedido calificacion;
 
         if (existente.isPresent()) {
-            // ✅ Si existe, ACTUALIZAR la calificación
+            // Actualizar calificación existente
             calificacion = existente.get();
             calificacion.setPuntuacion(dto.getPuntuacion());
             calificacion.setComentario(dto.getComentario());
-            calificacion.setFechaRegistro(LocalDateTime.now()); // Actualizar fecha
+            calificacion.setFechaRegistro(LocalDateTime.now());
         } else {
-            // ✅ Si no existe, CREAR nueva calificación
+            // Crear nueva calificación
             calificacion = new CalificacionPedido();
             calificacion.setPuntuacion(dto.getPuntuacion());
             calificacion.setComentario(dto.getComentario());
@@ -51,7 +59,6 @@ public class CalificacionPedidoServiceImpl implements CalificacionPedidoService 
             calificacion.setPedido(pedido);
         }
 
-        // 4️⃣ Guardar y devolver
         return calificacionRepository.save(calificacion);
     }
 

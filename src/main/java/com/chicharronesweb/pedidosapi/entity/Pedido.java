@@ -44,52 +44,6 @@ public class Pedido {
         CANCELADO
     }
 
-	public Integer getId() {
-		return id;
-	}
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	public Usuario getUsuario() {
-		return usuario;
-	}
-
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
-	}
-
-	public LocalDateTime getFechaHora() {
-		return fechaHora;
-	}
-
-	public void setFechaHora(LocalDateTime fechaHora) {
-		this.fechaHora = fechaHora;
-	}
-
-	public BigDecimal getTotal() {
-		return total;
-	}
-
-	public void setTotal(BigDecimal total) {
-		this.total = total;
-	}
-
-	public EstadoPedido getEstado() {
-		return estado;
-	}
-
-	public void setEstado(EstadoPedido estado) {
-		this.estado = estado;
-	}
-
-	public List<DetallePedido> getDetalles() {
-		return detalles;
-	}
-
-	public void setDetalles(List<DetallePedido> detalles) {
-		this.detalles = detalles;
-	}
     
 }

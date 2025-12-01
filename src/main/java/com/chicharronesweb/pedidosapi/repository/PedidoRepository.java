@@ -1,6 +1,7 @@
 package com.chicharronesweb.pedidosapi.repository;
 
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,17 +20,17 @@ public interface PedidoRepository extends JpaRepository<Pedido, Integer> {
 
     // 🔹 Nuevo método para el reporte
     @Query("""
-                SELECT new com.chicharronesweb.pedidosapi.dto.ProductoMasVendidoDTO(
-                    d.producto.nombre,
-                    SUM(d.cantidad),
-                    SUM(d.cantidad * d.precioUnitario)
-                )
-                FROM Pedido p
-                JOIN p.detalles d
-                WHERE FUNCTION('MONTH', p.fechaHora) = :mes
-                GROUP BY d.producto.nombre
-                ORDER BY SUM(d.cantidad) DESC
-            """)
+    SELECT new com.chicharronesweb.pedidosapi.dto.ProductoMasVendidoDTO(
+        d.producto.nombre,
+        SUM(d.cantidad),
+        SUM(d.cantidad * d.precioUnitario)
+    )
+    FROM Pedido p
+    JOIN p.detalles d
+    WHERE FUNCTION('MONTH', p.fechaHora) = :mes
+    GROUP BY d.producto.nombre
+    ORDER BY SUM(d.cantidad) DESC
+""")
     List<ProductoMasVendidoDTO> obtenerProductosMasVendidosPorMes(@Param("mes") int mes);
 
 }
